@@ -1,5 +1,4 @@
 from GradCAM import GradCAM
-from __future__ import print_function
 import argparse
 import torch
 import torch.nn as nn
@@ -80,7 +79,7 @@ def main():
     print(use_cuda)
     torch.manual_seed(args.seed)
 
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = 'cpu'
 
     kwargs = {'num_workers': 8, 'pin_memory': True} if use_cuda else {}
     train_loader = torch.utils.data.DataLoader(
@@ -104,12 +103,13 @@ def main():
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader)
-        torch.save(model, "model.pth")
 
-        ####################################################################
+        ##############################  ######################################
+        torch.save(model, "model.pt")
         gradcam_obj = GradCAM(img_path='catdog.png',
-                            model_path="model.pth",
-                            select_t_layer=False)
+                            model_path="model.pt",
+                            select_t_layer=False,
+                            Net=Net)
         gradcam_obj()
 
 
@@ -126,7 +126,7 @@ def saveModel():
     train_image, train_target= mnist_testset[24]
     train_image.show()
 
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = 'cpu'
     model = torch.load("model.pth").to(device)
     loader = transforms.Compose([
                            transforms.ToTensor(),
@@ -147,4 +147,5 @@ def saveModel():
 
 if __name__ == '__main__':
     #main() creates the model.pth. saveModel takes the model.pth and random input and creates model.pt.
-    saveModel()
+    # saveModel()
+    main()

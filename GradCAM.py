@@ -14,19 +14,21 @@ class GradCAM():
     def __init__(self,
                 img_path, 
                 model_path, 
-                select_t_layer, 
+                select_t_layer,
+                Net, 
                 class_index = None):
 
         self.img_path = img_path
         self.model_path = model_path
         self.class_index = class_index
         self.select_t_layer = select_t_layer
+        self.Net = Net
         
         # Save outputs of forward and backward hooking
         self.gradients = dict()
         self.activations = dict()
         
-        self.model = load_model(self.model_path)
+        self.model = load_model(self.model_path, self.Net)
         
         def backward_hook(module, grad_input, grad_output):
             self.gradients['value'] = grad_output[0]

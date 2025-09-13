@@ -10,13 +10,15 @@ from torch.autograd import Variable
 from torchvision import models
 import torchvision
 
-from exceptions import NoSuchNameError , NoIndexError
+# from exceptions import NoSuchNameError , NoIndexError
 
-def load_model(model_name):
+def load_model(model_name, Net: object):
     
     try:
         if '.pt' in model_name: #for saved model (.pt)
-            if torch.typename(torch.load(model_name)) == 'OrderedDict':
+            m = torch.load(model_name)
+            print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+            if torch.typename(m) == 'OrderedDict':
 
                 """
                 if you want to use customized model that has a type 'OrderedDict',
@@ -25,9 +27,11 @@ def load_model(model_name):
                 from Net import Net()
                 model=Net()
                 """
-                model.load_state_dict(torch.load(model_name))
+                print('SDNBDHIAB EFUIEBFUEIAFUEOQFEHFUOEFQ')
+                model.load_state_dict(m)
             else:
-                model = torch.load(model_name) 
+                print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+                model = m
 
         elif hasattr(models, model_name): #for pretrained model (ImageNet)
             model = getattr(models, model_name)(pretrained=True)
@@ -144,6 +148,6 @@ def choose_tlayer(model):
         t_layer = num_to_layer[a]
         return t_layer    
     except IndexError:
-        raise NoIndexError('Selected index (number) is not allowed.')
+        raise Exception('Selected index (number) is not allowed.')
     except KeyError:
-        raise NoSuchNameError('Selected name is not allowed.')
+        raise Exception('Selected name is not allowed.')
