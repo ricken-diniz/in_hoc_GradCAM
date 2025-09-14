@@ -42,7 +42,13 @@ class GradCAM():
             finalconv_after = ['classifier', 'avgpool', 'fc']
 
             for idx, m in enumerate(self.model._modules.items()):
-                if any(x in m for x in finalconv_after): 
+                has = False
+                for e in finalconv_after:
+                    if e in m:
+                        self.finalconv_module = e
+                        has = True
+                        break
+                if has: 
                     break
                 else:
                     # m[0] is a name of final module before classifer.
@@ -50,7 +56,7 @@ class GradCAM():
                     self.finalconv_module = m[1]
             
             # get a last layer of the module
-            self.t_layer = self.finalconv_module[-1]
+            self.t_layer = self.finalconv_module
         else:
             # get a target layer from user's input 
             self.t_layer = choose_tlayer(self.model)
@@ -99,3 +105,5 @@ class GradCAM():
         save(gradcam, self.img, self.img_path, self.model_path)
         
         print('GradCAM end !!!\n')
+
+

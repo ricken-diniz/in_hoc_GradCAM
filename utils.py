@@ -9,36 +9,37 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torchvision import models
 import torchvision
-
-# from exceptions import NoSuchNameError , NoIndexError
+from exceptions import NoSuchNameError , NoIndexError
+from modelNet import Net
 
 def load_model(model_name, Net: object):
     
     try:
         if '.pt' in model_name: #for saved model (.pt)
-            m = torch.load(model_name)
-            print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-            if torch.typename(m) == 'OrderedDict':
+            state_dict = torch.load(model_name)
+            # print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+            # if torch.typename(m) == 'OrderedDict':
 
-                """
-                if you want to use customized model that has a type 'OrderedDict',
-                you shoud load model object as follows:
+            #     """
+            #     if you want to use customized model that has a type 'OrderedDict',
+            #     you shoud load model object as follows:
                 
-                from Net import Net()
-                model=Net()
-                """
-                print('SDNBDHIAB EFUIEBFUEIAFUEOQFEHFUOEFQ')
-                model.load_state_dict(m)
-            else:
-                print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-                model = m
+            #     from Net import Net()
+            #     model=Net()
+            #     """
+            #     print('SDNBDHIAB EFUIEBFUEIAFUEOQFEHFUOEFQ')
+            model = Net()
+            model.load_state_dict(state_dict)
+            # else:
+            #     print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+            #     model = m
 
         elif hasattr(models, model_name): #for pretrained model (ImageNet)
             model = getattr(models, model_name)(pretrained=True)
 
-        model.eval()
-        if cuda_available():
-            model.cuda()
+        # model.eval()
+        # if cuda_available():
+        #     model.cuda()
     except:
         raise ValueError(f'Not unvalid model was loaded: {model_name}')
         
@@ -56,23 +57,17 @@ def load_image(path):
     return img
 
 def preprocess_image(img):
-    means = [0.485, 0.456, 0.406]
-    stds = [0.229, 0.224, 0.225]
+    mean = 0.5  # pode ajustar dependendo do treino
+    std = 0.5
 
-    preprocessed_img = img.copy()[:, :, ::-1]
-    for i in range(3):
-        preprocessed_img[:, :, i] = preprocessed_img[:, :, i] - means[i]
-        preprocessed_img[:, :, i] = preprocessed_img[:, :, i] / stds[i]
-    preprocessed_img = \
-        np.ascontiguousarray(np.transpose(preprocessed_img, (2, 0, 1)))
+    # converte para grayscale fazendo média dos canais
+    gray = np.mean(img, axis=2)  # [H, W]
+    gray = (gray - mean) / std
+    gray = np.expand_dims(gray, axis=0)  # [1, H, W]
 
-    if cuda_available():
-        preprocessed_img_tensor = torch.from_numpy(preprocessed_img).cuda()
-    else:
-        preprocessed_img_tensor = torch.from_numpy(preprocessed_img)
+    tensor = torch.from_numpy(gray).unsqueeze(0).float()
 
-    preprocessed_img_tensor.unsqueeze_(0)
-    return Variable(preprocessed_img_tensor, requires_grad=False)
+    return Variable(tensor, requires_grad=False)
 
 def save(mask, img, img_path, model_path):
 
@@ -148,6 +143,6 @@ def choose_tlayer(model):
         t_layer = num_to_layer[a]
         return t_layer    
     except IndexError:
-        raise Exception('Selected index (number) is not allowed.')
+        raise NoIndexError('Selected index (number) is not allowed.')
     except KeyError:
-        raise Exception('Selected name is not allowed.')
+        raise NoSuchNameError('Selected name is not allowed.')
