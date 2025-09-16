@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
+from torchvision.utils import save_image
 from modelNet import Net
 
 def train(args, model, device, train_loader, optimizer, epoch):
@@ -57,27 +58,35 @@ def main():
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
     args = parser.parse_args()
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-    print(use_cuda)
+    # use_cuda = not args.no_cuda and torch.cuda.is_available()
+    # print(use_cuda)
+    use_cuda = False
     torch.manual_seed(args.seed)
 
     device = 'cpu'
 
     kwargs = {'num_workers': 8, 'pin_memory': True} if use_cuda else {}
-    train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=True, download=True,
+
+    mnist_trainset = datasets.MNIST('./data', train=True, download=True,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
+                       ]))
+
+    train_loader = torch.utils.data.DataLoader(
+        mnist_trainset,
         batch_size=args.batch_size, shuffle=True, **kwargs)
+    
+
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=False, transform=transforms.Compose([
+        datasets.MNIST('./data', train=False, transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
         batch_size=args.test_batch_size, shuffle=True, **kwargs)
 
+    img_tensor, label = mnist_trainset[0]
+    save_image(img_tensor, "mnist_example.png")
 
     model = Net().to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
@@ -86,12 +95,11 @@ def main():
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader)
 
-        ##############################  ######################################
+        ####################################################################
         torch.save(model.state_dict(), "model.pt")
-        gradcam_obj = GradCAM(img_path='catdog.png',
+        gradcam_obj = GradCAM(img_path='mnist_example.png',
                             model_path="model.pt",
-                            select_t_layer=False,
-                            Net=Net)
+                            select_t_layer=False)
         gradcam_obj()
 
 
@@ -103,7 +111,7 @@ def createTracedModel(model, random_input):
 
 
 def saveModel():
-    use_cuda = torch.cuda.is_available()
+    use_cuda = False
     mnist_testset = datasets.MNIST(root='./data', train=False, download=True, transform=None)
     train_image, train_target= mnist_testset[24]
     train_image.show()

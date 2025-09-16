@@ -12,34 +12,17 @@ import torchvision
 from exceptions import NoSuchNameError , NoIndexError
 from modelNet import Net
 
-def load_model(model_name, Net: object):
+def load_model(model_name):
     
     try:
         if '.pt' in model_name: #for saved model (.pt)
             state_dict = torch.load(model_name)
-            # print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-            # if torch.typename(m) == 'OrderedDict':
-
-            #     """
-            #     if you want to use customized model that has a type 'OrderedDict',
-            #     you shoud load model object as follows:
-                
-            #     from Net import Net()
-            #     model=Net()
-            #     """
-            #     print('SDNBDHIAB EFUIEBFUEIAFUEOQFEHFUOEFQ')
             model = Net()
             model.load_state_dict(state_dict)
-            # else:
-            #     print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-            #     model = m
 
-        elif hasattr(models, model_name): #for pretrained model (ImageNet)
-            model = getattr(models, model_name)(pretrained=True)
+        # elif hasattr(models, model_name): #for pretrained model (ImageNet)
+        #     model = getattr(models, model_name)(pretrained=True)
 
-        # model.eval()
-        # if cuda_available():
-        #     model.cuda()
     except:
         raise ValueError(f'Not unvalid model was loaded: {model_name}')
         
@@ -47,11 +30,12 @@ def load_model(model_name, Net: object):
 
 def cuda_available():
     use_cuda = torch.cuda.is_available()
-    return use_cuda
+    # return use_cuda
+    return False
 
 def load_image(path):
     img = cv2.imread(path, 1)
-    img = cv2.resize(img, (224, 224))
+    img = cv2.resize(img, (28, 28))
     img = np.float32(img) / 255
 
     return img
@@ -93,9 +77,8 @@ def save(mask, img, img_path, model_path):
     gradcam_path = path + "/gradcam.png"
     n = 1
     while True:
-
-        if os.path.exists(path + "/gradcam.png"):
-            gradcam_path = path + "/gradcam" + str(n) + ".png" 
+        gradcam_path = path + "/gradcam" + str(n) + ".png" 
+        if os.path.exists(gradcam_path):
             n += 1
             continue
 
