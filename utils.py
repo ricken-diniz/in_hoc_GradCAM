@@ -77,7 +77,7 @@ def save(mask, img, img_path, model_path):
     gradcam_path = path + "/gradcam.png"
     n = 1
     while True:
-        gradcam_path = path + "/gradcam" + str(n) + ".png" 
+        gradcam_path = path + "/gradcam_epoch_" + str(n) + ".png" 
         if os.path.exists(gradcam_path):
             n += 1
             continue
